@@ -1,6 +1,9 @@
 package com.uniasselvi.money.conversion.service;
 
+import com.uniasselvi.money.conversion.converters.BRLtoCADConverter;
 import com.uniasselvi.money.conversion.converters.BRLtoEURConverter;
+import com.uniasselvi.money.conversion.converters.BRLtoGBPConverter;
+import com.uniasselvi.money.conversion.converters.BRLtoJPYConverter;
 import com.uniasselvi.money.conversion.converters.BRLtoUSDConverter;
 import com.uniasselvi.money.conversion.converters.CurrencyConverter;
 import com.uniasselvi.money.conversion.exception.ConversionException;
@@ -22,11 +25,26 @@ class ConversionStrategyResolverTest {
     @Mock
     private BRLtoEURConverter brlToEURConverter;
 
+    @Mock
+    private BRLtoGBPConverter brlToGBPConverter;
+
+    @Mock
+    private BRLtoJPYConverter brlToJPYConverter;
+
+    @Mock
+    private BRLtoCADConverter brlToCADConverter;
+
     private ConversionStrategyResolver resolver;
 
     @BeforeEach
     void setUp() {
-        resolver = new ConversionStrategyResolver(brlToUSDConverter, brlToEURConverter);
+        resolver = new ConversionStrategyResolver(
+            brlToUSDConverter, 
+            brlToEURConverter, 
+            brlToGBPConverter, 
+            brlToJPYConverter, 
+            brlToCADConverter
+        );
     }
 
     @Test
@@ -59,6 +77,36 @@ class ConversionStrategyResolverTest {
         // Then
         assertSame(brlToUSDConverter, converter1, "Should return the BRL to USD converter for lowercase codes");
         assertSame(brlToEURConverter, converter2, "Should return the BRL to EUR converter for mixed case codes");
+    }
+
+    @Test
+    @DisplayName("Should resolve BRL to GBP converter")
+    void shouldResolveBRLtoGBPConverter() {
+        // When
+        CurrencyConverter converter = resolver.resolve("BRL", "GBP");
+
+        // Then
+        assertSame(brlToGBPConverter, converter, "Should return the BRL to GBP converter");
+    }
+
+    @Test
+    @DisplayName("Should resolve BRL to JPY converter")
+    void shouldResolveBRLtoJPYConverter() {
+        // When
+        CurrencyConverter converter = resolver.resolve("BRL", "JPY");
+
+        // Then
+        assertSame(brlToJPYConverter, converter, "Should return the BRL to JPY converter");
+    }
+
+    @Test
+    @DisplayName("Should resolve BRL to CAD converter")
+    void shouldResolveBRLtoCADConverter() {
+        // When
+        CurrencyConverter converter = resolver.resolve("BRL", "CAD");
+
+        // Then
+        assertSame(brlToCADConverter, converter, "Should return the BRL to CAD converter");
     }
 
     @Test

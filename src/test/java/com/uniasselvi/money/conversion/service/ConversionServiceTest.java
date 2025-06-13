@@ -2,7 +2,10 @@ package com.uniasselvi.money.conversion.service;
 
 import com.uniasselvi.money.conversion.context.ConversionContext;
 import com.uniasselvi.money.conversion.conversions.ConversionResponse;
+import com.uniasselvi.money.conversion.converters.BRLtoCADConverter;
 import com.uniasselvi.money.conversion.converters.BRLtoEURConverter;
+import com.uniasselvi.money.conversion.converters.BRLtoGBPConverter;
+import com.uniasselvi.money.conversion.converters.BRLtoJPYConverter;
 import com.uniasselvi.money.conversion.converters.BRLtoUSDConverter;
 import com.uniasselvi.money.conversion.exception.ConversionException;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +32,15 @@ class ConversionServiceTest {
 
     @Mock
     private BRLtoEURConverter brlToEURConverter;
+
+    @Mock
+    private BRLtoGBPConverter brlToGBPConverter;
+
+    @Mock
+    private BRLtoJPYConverter brlToJPYConverter;
+
+    @Mock
+    private BRLtoCADConverter brlToCADConverter;
 
     @InjectMocks
     private ConversionService conversionService;
@@ -61,6 +73,57 @@ class ConversionServiceTest {
 
         when(strategyResolver.resolve("BRL", "EUR")).thenReturn(brlToEURConverter);
         when(brlToEURConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedAmount));
+
+        // When
+        ConversionResponse response = conversionService.convert(context);
+
+        // Then
+        assertEquals(expectedAmount, response.conversion(), "The converted amount should match the expected value");
+    }
+
+    @Test
+    @DisplayName("Should convert BRL to GBP correctly")
+    void shouldConvertBRLtoGBPCorrectly() {
+        // Given
+        ConversionContext context = new ConversionContext("BRL", "GBP", new BigDecimal("100"));
+        BigDecimal expectedAmount = new BigDecimal("100").divide(new BigDecimal("7.20"), 4, RoundingMode.HALF_UP);
+
+        when(strategyResolver.resolve("BRL", "GBP")).thenReturn(brlToGBPConverter);
+        when(brlToGBPConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedAmount));
+
+        // When
+        ConversionResponse response = conversionService.convert(context);
+
+        // Then
+        assertEquals(expectedAmount, response.conversion(), "The converted amount should match the expected value");
+    }
+
+    @Test
+    @DisplayName("Should convert BRL to JPY correctly")
+    void shouldConvertBRLtoJPYCorrectly() {
+        // Given
+        ConversionContext context = new ConversionContext("BRL", "JPY", new BigDecimal("100"));
+        BigDecimal expectedAmount = new BigDecimal("100").divide(new BigDecimal("0.037"), 4, RoundingMode.HALF_UP);
+
+        when(strategyResolver.resolve("BRL", "JPY")).thenReturn(brlToJPYConverter);
+        when(brlToJPYConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedAmount));
+
+        // When
+        ConversionResponse response = conversionService.convert(context);
+
+        // Then
+        assertEquals(expectedAmount, response.conversion(), "The converted amount should match the expected value");
+    }
+
+    @Test
+    @DisplayName("Should convert BRL to CAD correctly")
+    void shouldConvertBRLtoCADCorrectly() {
+        // Given
+        ConversionContext context = new ConversionContext("BRL", "CAD", new BigDecimal("100"));
+        BigDecimal expectedAmount = new BigDecimal("100").divide(new BigDecimal("4.10"), 4, RoundingMode.HALF_UP);
+
+        when(strategyResolver.resolve("BRL", "CAD")).thenReturn(brlToCADConverter);
+        when(brlToCADConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedAmount));
 
         // When
         ConversionResponse response = conversionService.convert(context);
