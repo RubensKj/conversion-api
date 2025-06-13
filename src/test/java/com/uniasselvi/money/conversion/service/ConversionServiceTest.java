@@ -2,23 +2,38 @@ package com.uniasselvi.money.conversion.service;
 
 import com.uniasselvi.money.conversion.context.ConversionContext;
 import com.uniasselvi.money.conversion.conversions.ConversionResponse;
+import com.uniasselvi.money.conversion.converters.BRLtoEURConverter;
+import com.uniasselvi.money.conversion.converters.BRLtoUSDConverter;
 import com.uniasselvi.money.conversion.exception.ConversionException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConversionServiceTest {
 
+    @Mock
+    private ConversionStrategyResolver strategyResolver;
+
+    @Mock
+    private BRLtoUSDConverter brlToUSDConverter;
+
+    @Mock
+    private BRLtoEURConverter brlToEURConverter;
+
     @InjectMocks
     private ConversionService conversionService;
+
+    // No setup needed here, we'll set up the mocks in each test method
 
     @Test
     @DisplayName("Should convert BRL to USD correctly")
@@ -26,6 +41,9 @@ class ConversionServiceTest {
         // Given
         ConversionContext context = new ConversionContext("BRL", "USD", new BigDecimal("100"));
         BigDecimal expectedAmount = new BigDecimal("100").divide(new BigDecimal("5.54"), 4, RoundingMode.HALF_UP);
+
+        when(strategyResolver.resolve("BRL", "USD")).thenReturn(brlToUSDConverter);
+        when(brlToUSDConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedAmount));
 
         // When
         ConversionResponse response = conversionService.convert(context);
@@ -41,6 +59,9 @@ class ConversionServiceTest {
         ConversionContext context = new ConversionContext("BRL", "EUR", new BigDecimal("100"));
         BigDecimal expectedAmount = new BigDecimal("100").divide(new BigDecimal("6.40"), 4, RoundingMode.HALF_UP);
 
+        when(strategyResolver.resolve("BRL", "EUR")).thenReturn(brlToEURConverter);
+        when(brlToEURConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedAmount));
+
         // When
         ConversionResponse response = conversionService.convert(context);
 
@@ -53,6 +74,8 @@ class ConversionServiceTest {
     void shouldThrowExceptionForUnsupportedConversion() {
         // Given
         ConversionContext context = new ConversionContext("USD", "BRL", new BigDecimal("100"));
+
+        when(strategyResolver.resolve("USD", "BRL")).thenThrow(new ConversionException("Conversion for [USD] to [BRL] is not supported"));
 
         // When & Then
         ConversionException exception = assertThrows(
@@ -71,9 +94,14 @@ class ConversionServiceTest {
         // Given
         ConversionContext context1 = new ConversionContext("brl", "usd", new BigDecimal("100"));
         ConversionContext context2 = new ConversionContext("Brl", "Eur", new BigDecimal("100"));
-        
+
         BigDecimal expectedUsdAmount = new BigDecimal("100").divide(new BigDecimal("5.54"), 4, RoundingMode.HALF_UP);
         BigDecimal expectedEurAmount = new BigDecimal("100").divide(new BigDecimal("6.40"), 4, RoundingMode.HALF_UP);
+
+        when(strategyResolver.resolve("brl", "usd")).thenReturn(brlToUSDConverter);
+        when(strategyResolver.resolve("Brl", "Eur")).thenReturn(brlToEURConverter);
+        when(brlToUSDConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedUsdAmount));
+        when(brlToEURConverter.convert(new BigDecimal("100"))).thenReturn(new ConversionResponse(expectedEurAmount));
 
         // When
         ConversionResponse response1 = conversionService.convert(context1);
